@@ -19,8 +19,6 @@ export const test = base.extend<BaseFixtures>({
 
   session: async ({ config }, use, testInfo) => {
     const session = await PlaywrightFactory.getBrowser(config, testInfo.title);
-    await session.page.goto(config.pageUrl, { waitUntil: 'domcontentloaded' });
-
     await use(session);
 
     await session.page.close();
