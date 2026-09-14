@@ -40,8 +40,18 @@ public sealed class PersonalDetailsFormPlaywright
     /// <summary>
     /// Submits the form and accepts the confirmation alert.
     /// </summary>
-    public Task SubmitAndAcceptAlertAsync()
+    public Task SubmitAsync()
     {
-        return _page.WaitForAlertAndAccept(() => _page.Locator(ContinueButton).ClickAsync());
+        return _page.Locator(ContinueButton).ClickAsync();
+    }
+
+    /// <summary>
+    /// Submits the form and validates alert content against expected values.
+    /// </summary>
+    public Task SubmitAndValidateAlertAsync(IReadOnlyCollection<string> expectedAlertMessages)
+    {
+        return _page.WaitForAlertAnyMessageAndAccept(
+            () => _page.Locator(ContinueButton).ClickAsync(),
+            expectedAlertMessages);
     }
 }

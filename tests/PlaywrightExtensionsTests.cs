@@ -26,4 +26,11 @@ public class PlaywrightExtensionsTests
         Assert.ThrowsAsync<TimeoutException>(async () =>
             await PlaywrightExtensions.WaitUntilAsync(() => Task.FromResult(false), timeoutSeconds: 0, pollingIntervalSeconds: 1));
     }
+
+    [Test]
+    public async Task WaitUntilAsync_EvaluatesImmediately_WhenTimeoutIsZero()
+    {
+        await PlaywrightExtensions.WaitUntilAsync(() => Task.FromResult(true), timeoutSeconds: 0, pollingIntervalSeconds: 1);
+        Assert.Pass();
+    }
 }

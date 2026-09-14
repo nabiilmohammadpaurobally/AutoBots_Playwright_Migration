@@ -174,8 +174,9 @@ public static class PlaywrightExtensions
     {
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void Handler(object? sender, IDialog dialog)
+        async void Handler(object? sender, IDialog dialog)
         {
+            await dialog.DismissAsync().ConfigureAwait(false);
             tcs.TrySetResult(true);
         }
 
@@ -225,6 +226,16 @@ public static class PlaywrightExtensions
         await dialog.AcceptAsync().ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Registers dialog handling before running the action, validates any expected message and accepts it.
+    /// </summary>
+    public static async Task WaitForAlertAnyMessageAndAccept(this IPage page, Func<Task> triggerAction, IReadOnlyCollection<string> expectedMessages, int timeoutInSeconds = 10)
+    {
+        var dialogTask = WaitForDialogAsync(page, timeoutInSeconds);
+        await triggerAction().ConfigureAwait(false);
+        await ConsumeAlertContainsAndAccept(dialogTask, expectedMessages).ConfigureAwait(false);
+    }
+
     private static async Task ConsumeAlertContainsAndAccept(Task<IDialog> dialogTask, IReadOnlyCollection<string> expectedMessages)
     {
         var dialog = await dialogTask.ConfigureAwait(false);
@@ -257,13 +268,17 @@ public static class PlaywrightExtensions
 
     internal static async Task WaitUntilAsync(Func<Task<bool>> predicate, int timeoutSeconds, int pollingIntervalSeconds)
     {
-        var timeout = DateTime.UtcNow.AddSeconds(timeoutSeconds);
-
-        while (DateTime.UtcNow < timeout)
+        var deadline = DateTime.UtcNow.AddSeconds(timeoutSeconds);
+        while (true)
         {
             if (await predicate().ConfigureAwait(false))
             {
                 return;
+            }
+
+            if (DateTime.UtcNow >= deadline)
+            {
+                break;
             }
 
             await Task.Delay(TimeSpan.FromSeconds(pollingIntervalSeconds)).ConfigureAwait(false);

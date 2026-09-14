@@ -23,6 +23,6 @@ public sealed class T386672_Employee_Books_Neonatal_Playwright : BasePlaywrightT
 
         var form = new PersonalDetailsFormPlaywright(Page);
         await form.FillAsync(data.Employee).ConfigureAwait(false);
-        await form.SubmitAndAcceptAlertAsync().ConfigureAwait(false);
+        await form.SubmitAndValidateAlertAsync(data.ExpectedAlerts).ConfigureAwait(false);
     }
 }
