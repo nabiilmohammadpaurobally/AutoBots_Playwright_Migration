@@ -1,235 +1,124 @@
-# Selenium to Playwright C# Migration Guide (AutoBots)
+# Selenium C# NUnit to Playwright TypeScript Migration Guide
 
 ## Executive Summary
-This starter package migrates the AutoBots Selenium NUnit framework to Playwright NUnit while preserving:
-- JSON-driven test data flow
-- ExtentReports reporting
-- Parallel execution
-- BrowserStack + local browser execution
+This starter package migrates AutoBots from Selenium C# NUnit to Playwright TypeScript while preserving JSON-driven test data, BrowserStack support, and parallel execution.
 
-**Estimated effort:** **4-6 weeks** for phased, low-risk migration.
+**Effort estimate:** **4-6 weeks**.
 
-## 6-Phase Migration Plan
-1. **Foundation Setup (Week 1)**
-   - Add Playwright packages/configuration
-   - Add `PlaywrightFactory`, `PlaywrightConfig`, `BasePlaywrightTest`, `PlaywrightExtensions`
-2. **Core Utility Conversion (Week 1-2)**
-   - Convert Selenium extension helpers to Playwright async helpers
-3. **Page Object Conversion (Week 2-3)**
-   - Replace `IWebDriver`/`By` usage with `IPage`/locator strings
-4. **Test Class Conversion (Week 3-4)**
-   - Move to async setup/teardown fixture pattern
-5. **BrowserStack + Parallel Hardening (Week 4-5)**
-   - Validate local/cloud browser matrix and thread-safe execution
-6. **Regression + Stabilization (Week 5-6)**
-   - Run target suites, tune timeouts, fix flaky locators
+## 6-Phase Plan
+1. **Foundation setup**: Node/TypeScript/Playwright project bootstrap.
+2. **Core helper conversion**: Selenium extensions to Playwright async helpers.
+3. **Page object conversion**: `IWebDriver/By` patterns to `Page/Locator`.
+4. **Test conversion**: NUnit tests to Playwright Test fixtures.
+5. **Cloud + parallel hardening**: BrowserStack + worker tuning.
+6. **Regression and stabilization**: execute suites and fix flakes.
 
 ## Architecture Comparison
-| Area | Selenium | Playwright |
+| Area | Selenium C# NUnit | Playwright TypeScript |
 |---|---|---|
-| Driver lifecycle | `IWebDriver` | `IPlaywright + IBrowser + IBrowserContext + IPage` |
-| Wait strategy | Explicit waits + custom smart waits | Auto-waiting + load state waits |
-| Locators | `By.Id`, `By.XPath` | CSS/XPath/text locators via `page.Locator(...)` |
-| iFrames | `SwitchTo().Frame(...)` | `page.FrameLocator(...)` |
-| Alerts | `SwitchTo().Alert()` | `page.Dialog` event |
-| Parallel model | `ThreadLocal<IWebDriver>` | Thread-local session with context/page |
+| Runner | NUnit | Playwright Test |
+| Driver lifecycle | IWebDriver | BrowserContext + Page fixtures |
+| Waits | Explicit waits + custom helpers | Auto-wait + locator assertions |
+| iFrame | SwitchTo().Frame | frameLocator |
+| Alert handling | IAlert | page.waitForEvent('dialog') |
+| Parallelization | Parallelizable + ThreadLocal | fullyParallel + workers |
 
-## Step-by-Step Conversion Process
-1. Add Playwright + NUnit packages to `.csproj`.
-2. Add `PlaywrightConfig` to load `app.runsettings` values from `TestContext.Parameters`.
-3. Replace browser factory with `PlaywrightFactory` (local Chrome/Edge + BrowserStack).
-4. Replace base test class with async `BasePlaywrightTest`.
-5. Convert extension methods from `IWebDriver` to `IPage` async extensions.
-6. Convert page objects and tests incrementally by module.
-7. Run targeted tests after each module conversion.
+## Step-by-Step Conversion
+1. Replace `.csproj`/NuGet setup with `package.json` + TypeScript config.
+2. Move runtime configuration from `app.runsettings` to environment variables.
+3. Replace browser factory with `src/factories/playwrightFactory.ts`.
+4. Replace base class setup/teardown with `src/fixtures/basePlaywrightTest.ts`.
+5. Convert Selenium helper methods to `src/extensions/playwrightExtensions.ts`.
+6. Keep JSON flow with `src/helpers/jsonReader.ts` and migrate tests incrementally.
 
-### Included Starter Conversion Assets
-- `src/AutobotsPlaywrightFramework/PageObjects/Neonatal/PersonalDetailsFormPlaywright.cs`
-- `tests/Neonatal/T386672_Employee_Books_Neonatal_Playwright.cs` (explicit sample)
-- `src/AutobotsPlaywrightFramework/HelperClasses/JsonReader.cs`
-- `src/AutobotsPlaywrightFramework/HelperClasses/GetTestDataPath.cs`
+## TypeScript Foundation Files Included
+- `src/config/playwrightConfig.ts`
+- `src/factories/playwrightFactory.ts`
+- `src/fixtures/basePlaywrightTest.ts`
+- `src/extensions/playwrightExtensions.ts`
+- `playwright.config.ts`
 
-## BrowserStack Integration (Playwright)
-- Use BrowserStack Playwright CDP endpoint (`ConnectionString`) with encoded capabilities.
-- Pass session name as current NUnit test name.
-- Required settings:
-  - `BrowserStackUserName`
-  - `BrowserStackAccessKey`
-  - `ConnectionString`
+## BrowserStack Integration
+Environment variables:
+- `BROWSER_OPTION=bs_chrome|bs_edge`
+- `BROWSERSTACK_USERNAME`
+- `BROWSERSTACK_ACCESS_KEY`
+- `BROWSERSTACK_CDP_URL` (default: `wss://cdp.browserstack.com/playwright`)
 
-## Parallel Execution Setup
-- Use `[assembly: Parallelizable(ParallelScope.Fixtures)]`
-- Use `[assembly: LevelOfParallelism(4)]` (tune per CI capacity)
-- Keep runtime objects in thread-local storage in base fixture.
+Session naming uses the current test title.
 
-## Common Pitfalls and Solutions
-- **Pitfall:** Mixing sync + async test code.  
-  **Fix:** Use async `[SetUp]`, `[TearDown]`, and `Task` test methods.
-- **Pitfall:** brittle waits copied from Selenium.  
-  **Fix:** Prefer Playwright auto-wait + `WaitForLoadStateAsync`.
-- **Pitfall:** BrowserStack credentials missing in runsettings.  
-  **Fix:** validate config early with `ValidateOrThrow()`.
-- **Pitfall:** stale element assumptions.  
-  **Fix:** re-query using locators instead of storing element snapshots.
+## Parallel Execution
+- `playwright.config.ts`: `fullyParallel: true`
+- Worker count controlled by `PLAYWRIGHT_WORKERS`.
 
----
+## Before/After Samples
 
-## Before/After Code Samples
-
-### 1) PersonalDetailsForm Conversion
-
-#### Before (Selenium)
+### PersonalDetailsForm Conversion
+**Before (Selenium C#)**
 ```csharp
-public class PersonalDetailsForm
-{
-    private readonly IWebDriver _driver;
-    private readonly By FirstName = By.Id("firstName");
-    private readonly By GenderFrame = By.XPath("//iframe[@id='genderFrame']");
-
-    public PersonalDetailsForm(IWebDriver driver) => _driver = driver;
-
-    public void Fill(string firstName)
-    {
-        _driver.WaitUntilVisible(FirstName).SendKeys(firstName);
-        _driver.SwitchTo().Frame(_driver.FindElement(GenderFrame));
-        _driver.FindElement(By.Id("genderMale")).Click();
-        _driver.SwitchTo().DefaultContent();
-    }
-}
+_driver.FindElement(By.Id("firstName")).SendKeys(firstName);
+_driver.SwitchTo().Frame(_driver.FindElement(By.Id("genderFrame")));
+_driver.FindElement(By.Id("genderMale")).Click();
 ```
 
-#### After (Playwright)
-```csharp
-public sealed class PersonalDetailsForm
-{
-    private readonly IPage _page;
-    private const string FirstName = "#firstName";
-    private const string GenderFrame = "iframe#genderFrame";
-
-    public PersonalDetailsForm(IPage page) => _page = page;
-
-    public async Task FillAsync(string firstName)
-    {
-        await (await _page.WaitUntilVisible(FirstName)).FillAsync(firstName);
-        await _page.FrameLocator(GenderFrame).Locator("#genderMale").ClickAsync();
-    }
-}
+**After (Playwright TS)**
+```ts
+await page.locator('#firstName').fill(firstName);
+await page.frameLocator('iframe#genderFrame').locator('#genderMale').click();
 ```
 
-### 2) T386672_Employee_Books_Neonatal Test Conversion
-
-#### Before (Selenium)
+### T386672 Test Conversion
+**Before (Selenium C# NUnit)**
 ```csharp
-[TestFixture]
-public class T386672_Employee_Books_Neonatal : BaseClass
-{
-    [Test]
-    public void Validate_Booking()
-    {
-        var data = JsonReader.FetchData<BookingData>("Neonatal/T386672_Employee_Books_Neonatal");
-        var page = new PersonalDetailsForm(Driver);
-        page.Fill(data.Employee.FirstName);
-    }
-}
+var data = JsonReader.FetchData<BookingData>("Neonatal/T386672_Employee_Books_Neonatal");
+var page = new PersonalDetailsForm(driver);
+page.Fill(data.Employee.FirstName);
 ```
 
-#### After (Playwright)
-```csharp
-[TestFixture]
-public class T386672_Employee_Books_Neonatal : BasePlaywrightTest
-{
-    [Test]
-    public async Task Validate_Booking()
-    {
-        var data = JsonReader.FetchData<BookingData>("Neonatal/T386672_Employee_Books_Neonatal"); // unchanged
-        var pageObject = new PersonalDetailsForm(Page);
-        await pageObject.FillAsync(data.Employee.FirstName);
-    }
-}
+**After (Playwright TypeScript)**
+```ts
+const data = fetchData<EmployeeBookingData>('Neonatal/T386672_Employee_Books_Neonatal');
+const form = new PersonalDetailsFormPlaywright(page);
+await form.fill(data.employee);
 ```
 
-### 3) Setup Pattern Conversion
+### Setup Pattern Conversion
+**Before**: NUnit `[SetUp]/[TearDown]` + `ThreadLocal<IWebDriver>`.
 
-#### Before (Selenium ThreadLocal)
-```csharp
-[SetUp]
-public void SetUp()
-{
-    Driver = BrowserFactory.GetBrowser(TestContext.Parameters["BrowserOption"]);
-}
-
-[TearDown]
-public void TearDown()
-{
-    Driver?.Quit();
-}
-```
-
-#### After (Playwright async + context)
-```csharp
-[SetUp]
-public async Task SetUpAsync()
-{
-    Config = PlaywrightConfig.FromTestContext();
-    Session = await PlaywrightFactory.GetBrowserAsync(Config.BrowserType, Config);
-}
-
-[TearDown]
-public async Task TearDownAsync()
-{
-    await Session.Page.CloseAsync();
-    await Session.Context.CloseAsync();
-    await Session.Browser.CloseAsync();
-    Session.Playwright.Dispose();
-}
-```
-
----
+**After**: Playwright Test fixture extension in `basePlaywrightTest.ts` returning `config`, `session`, and `page` per test.
 
 ## Locator Conversion Reference
-| Selenium | Playwright |
+| Selenium | Playwright TS |
 |---|---|
-| `By.Id("id")` | `page.Locator("#id")` |
-| `By.XPath("//div")` | `page.Locator("xpath=//div")` |
-| `By.ClassName("btn")` | `page.Locator(".btn")` |
-| `new SelectElement(element).SelectByText("A")` | `page.SelectOptionAsync("#select", new() { Label = "A" })` |
-| `driver.FindElement(by)` | `page.Locator("...")` |
-| `driver.FindElements(by)` | `page.Locator("...").AllAsync()` |
+| `By.Id("id")` | `page.locator('#id')` |
+| `By.XPath("//div")` | `page.locator('xpath=//div')` |
+| `By.ClassName("btn")` | `page.locator('.btn')` |
+| `SelectElement` | `page.locator('select').selectOption()` |
+| `FindElement` | `page.locator()` |
+| `FindElements` | `page.locator().all()` |
 
----
-
-## Playwright app.runsettings Template
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<RunSettings>
-  <RunConfiguration>
-    <MaxCpuCount>4</MaxCpuCount>
-    <TargetFrameworkVersion>net8.0</TargetFrameworkVersion>
-  </RunConfiguration>
-  <TestRunParameters>
-    <Parameter name="BrowserOption" value="chrome" />
-    <Parameter name="PageUrl" value="https://your-app-url" />
-    <Parameter name="ConnectionString" value="wss://cdp.browserstack.com/playwright" />
-    <Parameter name="BrowserStackUserName" value="${BROWSERSTACK_USERNAME}" />
-    <Parameter name="BrowserStackAccessKey" value="${BROWSERSTACK_ACCESS_KEY}" />
-    <Parameter name="DefaultTimeoutMs" value="60000" />
-    <Parameter name="PollingIntervalMs" value="1000" />
-    <Parameter name="ParallelScope" value="Fixtures" />
-    <Parameter name="LevelOfParallelism" value="4" />
-  </TestRunParameters>
-</RunSettings>
+## Environment Template
+Create `.env`:
+```bash
+BROWSER_OPTION=chrome
+PAGE_URL=https://your-app-url
+DEFAULT_TIMEOUT_MS=60000
+POLLING_INTERVAL_MS=1000
+PLAYWRIGHT_WORKERS=4
+TEST_DATA_PATH=TestData
+BROWSERSTACK_USERNAME=
+BROWSERSTACK_ACCESS_KEY=
+BROWSERSTACK_CDP_URL=wss://cdp.browserstack.com/playwright
 ```
 
-## .csproj NuGet Update (Required)
-> Note: `AventStack.ExtentReports` namespace is delivered by the `ExtentReports` NuGet package.
+## Required Packages
+`package.json` includes:
+- `@playwright/test`
+- `typescript`
+- `@types/node`
 
-```xml
-<ItemGroup>
-  <PackageReference Include="Microsoft.Playwright" Version="1.54.0" />
-  <PackageReference Include="NUnit" Version="3.14.0" />
-  <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
-  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-  <PackageReference Include="ExtentReports" Version="5.0.4" />
-  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-</ItemGroup>
-```
+## Common Pitfalls
+- Mixing old Selenium sync patterns with Playwright async APIs.
+- Keeping brittle explicit waits instead of locator assertions.
+- Not setting BrowserStack credentials for `bs_*` runs.
+- Forgetting `npm run install:browsers` in new environments.

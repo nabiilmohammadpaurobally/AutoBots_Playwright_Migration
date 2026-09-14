@@ -1,22 +1,21 @@
-# AutoBots_Playwright_Migration
+# AutoBots Playwright Migration (TypeScript)
 
-Selenium to Playwright C# NUnit migration starter for AutoBots.
-
-## Included
-- Migration guide: `MIGRATION_GUIDE.md`
-- Playwright foundation code (factory/config/base/extensions)
-- JSON reader + test data path helpers
-- Converted Neonatal sample page object + explicit sample test
+Selenium C# NUnit to Playwright **TypeScript** starter package.
 
 ## Quick start
-1. Restore/build:
-   - `dotnet build AutoBots.Playwright.MigrationStarter.csproj`
-2. Install Playwright browsers:
-   - `pwsh bin/Debug/net8.0/playwright.ps1 install`
-   - or `playwright install`
-3. Run automated checks:
-   - `dotnet test AutoBots.Playwright.MigrationStarter.csproj`
-4. Run the converted sample (explicit):
-   - `dotnet test AutoBots.Playwright.MigrationStarter.csproj --filter FullyQualifiedName~T386672_Employee_Books_Neonatal_Playwright`
+```bash
+npm install
+npm run install:browsers
+npm run build
+npm test
+```
 
-> The Neonatal sample test is marked `[Explicit]` and intended as a migration template.
+## Key files
+- `MIGRATION_GUIDE.md`
+- `playwright.config.ts`
+- `src/config/playwrightConfig.ts`
+- `src/factories/playwrightFactory.ts`
+- `src/fixtures/basePlaywrightTest.ts`
+- `src/extensions/playwrightExtensions.ts`
+- `src/helpers/jsonReader.ts`
+- `tests/neonatal/T386672_Employee_Books_Neonatal_Playwright.spec.ts`
