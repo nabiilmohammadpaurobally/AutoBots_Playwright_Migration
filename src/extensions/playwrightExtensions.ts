@@ -51,12 +51,11 @@ export async function waitForAlertAndAccept(page: Page, trigger: () => Promise<v
 
 export async function smartWaitPageLoader(page: Page, timeoutMs = 60_000): Promise<void> {
   await page.waitForLoadState('domcontentloaded', { timeout: timeoutMs });
-  await page.waitForLoadState('networkidle', { timeout: timeoutMs });
 }
 
 export async function staticWait(seconds: number): Promise<void> {
-  if (seconds < 0) {
-    throw new RangeError('Wait time must be non-negative.');
+  if (!Number.isFinite(seconds) || !Number.isInteger(seconds) || seconds < 0) {
+    throw new RangeError('Wait time must be a non-negative integer.');
   }
 
   await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -67,13 +66,20 @@ export async function isElementPresent(page: Page, selector: string): Promise<bo
 }
 
 export async function isAlertPresent(page: Page, timeoutMs = 2_000): Promise<boolean> {
-  try {
-    const dialog = await page.waitForEvent('dialog', { timeout: timeoutMs });
-    await dialog.dismiss();
-    return true;
-  } catch {
-    return false;
-  }
+  return new Promise<boolean>((resolve) => {
+    const timer = setTimeout(() => {
+      page.off('dialog', handler);
+      resolve(false);
+    }, timeoutMs);
+
+    const handler = (): void => {
+      clearTimeout(timer);
+      page.off('dialog', handler);
+      resolve(true);
+    };
+
+    page.on('dialog', handler);
+  });
 }
 
 export async function waitForAlertValidateMessageAndAccept(

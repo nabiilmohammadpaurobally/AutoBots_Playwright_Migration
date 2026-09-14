@@ -8,6 +8,12 @@ test.describe('wait helpers', () => {
   });
 
   test('staticWait rejects negative values', async () => {
-    await expect(staticWait(-1)).rejects.toThrow(/non-negative/);
+    await expect(staticWait(-1)).rejects.toThrow(/non-negative integer/);
+  });
+
+  test('staticWait rejects non-integer values', async () => {
+    await expect(staticWait(1.5)).rejects.toThrow(/non-negative integer/);
+    await expect(staticWait(Number.NaN)).rejects.toThrow(/non-negative integer/);
+    await expect(staticWait(Number.POSITIVE_INFINITY)).rejects.toThrow(/non-negative integer/);
   });
 });

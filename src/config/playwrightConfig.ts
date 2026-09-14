@@ -87,7 +87,7 @@ export class PlaywrightConfig {
 
   private static parsePositiveInt(value: string | undefined, fallback: number): number {
     const parsed = Number(value);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
   }
 
   private static parseBoolean(value: string | undefined, fallback: boolean, keyName: string): boolean {

@@ -10,4 +10,16 @@ test.describe('PlaywrightConfig', () => {
     const config = PlaywrightConfig.fromEnv({ BROWSER_OPTION: 'chrome', HEADLESS: 'false', PAGE_URL: 'https://example.com' } as NodeJS.ProcessEnv);
     expect(config.headless).toBe(false);
   });
+
+  test('falls back for non-integer numeric values', () => {
+    const config = PlaywrightConfig.fromEnv({
+      BROWSER_OPTION: 'chrome',
+      PAGE_URL: 'https://example.com',
+      DEFAULT_TIMEOUT_MS: '1000.5',
+      POLLING_INTERVAL_MS: 'abc'
+    } as NodeJS.ProcessEnv);
+
+    expect(config.defaultTimeoutMs).toBe(60_000);
+    expect(config.pollingIntervalMs).toBe(1_000);
+  });
 });
