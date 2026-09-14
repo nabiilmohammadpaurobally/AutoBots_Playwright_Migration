@@ -75,7 +75,7 @@ public static class PlaywrightExtensions
     /// </summary>
     public static Task JavaScriptClick(this IPage page, string locator)
     {
-        return page.EvaluateAsync("selector => document.querySelector(selector)?.dispatchEvent(new MouseEvent('click', { bubbles: true }))", locator);
+        return page.Locator(locator).First.EvaluateAsync("element => element.click()");
     }
 
     /// <summary>
@@ -174,9 +174,8 @@ public static class PlaywrightExtensions
     {
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        async void Handler(object? _, IDialog dialog)
+        void Handler(object? sender, IDialog dialog)
         {
-            await dialog.DismissAsync().ConfigureAwait(false);
             tcs.TrySetResult(true);
         }
 
@@ -256,7 +255,7 @@ public static class PlaywrightExtensions
         }
     }
 
-    private static async Task WaitUntilAsync(Func<Task<bool>> predicate, int timeoutSeconds, int pollingIntervalSeconds)
+    internal static async Task WaitUntilAsync(Func<Task<bool>> predicate, int timeoutSeconds, int pollingIntervalSeconds)
     {
         var timeout = DateTime.UtcNow.AddSeconds(timeoutSeconds);
 

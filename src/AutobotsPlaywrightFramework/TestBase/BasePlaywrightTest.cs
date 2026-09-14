@@ -71,7 +71,10 @@ public abstract class BasePlaywrightTest
             Config,
             TestContext.CurrentContext.Test.Name).ConfigureAwait(false);
 
-        ExtentNode.Value = _extentReports?.CreateTest(TestContext.CurrentContext.Test.Name);
+        lock (ExtentLock)
+        {
+            ExtentNode.Value = _extentReports?.CreateTest(TestContext.CurrentContext.Test.Name);
+        }
 
         await Page.GotoAsync(Config.PageUrl, new PageGotoOptions
         {
@@ -106,12 +109,6 @@ public abstract class BasePlaywrightTest
             Session.Value.Playwright.Dispose();
             Session.Value = null;
         }
-
-    }
-
-    [OneTimeTearDown]
-    public void OneTimeTearDown()
-    {
         lock (ExtentLock)
         {
             _extentReports?.Flush();

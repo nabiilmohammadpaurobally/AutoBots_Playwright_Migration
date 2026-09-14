@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using AutobotsPlaywrightFramework.Configurations;
 using Microsoft.Playwright;
@@ -82,7 +81,7 @@ public static class PlaywrightFactory
         };
 
         var capabilitiesJson = JsonSerializer.Serialize(capabilities);
-        var encodedCaps = Convert.ToBase64String(Encoding.UTF8.GetBytes(capabilitiesJson));
+        var encodedCaps = Uri.EscapeDataString(capabilitiesJson);
         var endpoint = $"{config.ConnectionString}?caps={encodedCaps}";
 
         return playwright.Chromium.ConnectAsync(endpoint);
