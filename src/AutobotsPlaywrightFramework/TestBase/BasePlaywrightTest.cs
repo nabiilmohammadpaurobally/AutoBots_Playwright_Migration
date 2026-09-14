@@ -63,6 +63,9 @@ public abstract class BasePlaywrightTest
     [SetUp]
     public async Task SetUpAsync()
     {
+        Thread.CurrentThread.CurrentCulture = new CultureInfo("en-GB");
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-GB");
+
         Config = PlaywrightConfig.FromTestContext();
         Config.ValidateOrThrow();
 
@@ -88,16 +91,19 @@ public abstract class BasePlaywrightTest
     [TearDown]
     public async Task TearDownAsync()
     {
-        if (ExtentNode.Value is not null)
+        lock (ExtentLock)
         {
-            if (TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Passed)
+            if (ExtentNode.Value is not null)
             {
-                ExtentNode.Value.Pass("Test passed");
-            }
-            else
-            {
-                var error = TestContext.CurrentContext.Result.Message;
-                ExtentNode.Value.Fail($"Test failed: {error}");
+                if (TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Passed)
+                {
+                    ExtentNode.Value.Pass("Test passed");
+                }
+                else
+                {
+                    var error = TestContext.CurrentContext.Result.Message;
+                    ExtentNode.Value.Fail($"Test failed: {error}");
+                }
             }
         }
 

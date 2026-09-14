@@ -13,6 +13,7 @@
     <Parameter name="BrowserStackAccessKey" value="" />
     <Parameter name="DefaultTimeoutMs" value="60000" />
     <Parameter name="PollingIntervalMs" value="1000" />
+    <Parameter name="TestDataPath" value="/home/runner/work/AutoBots_Playwright_Migration/AutoBots_Playwright_Migration/TestData" />
     <Parameter name="ParallelScope" value="Fixtures" />
     <Parameter name="LevelOfParallelism" value="4" />
   </TestRunParameters>

@@ -43,6 +43,12 @@ This starter package migrates the AutoBots Selenium NUnit framework to Playwrigh
 6. Convert page objects and tests incrementally by module.
 7. Run targeted tests after each module conversion.
 
+### Included Starter Conversion Assets
+- `src/AutobotsPlaywrightFramework/PageObjects/Neonatal/PersonalDetailsFormPlaywright.cs`
+- `tests/Neonatal/T386672_Employee_Books_Neonatal_Playwright.cs` (explicit sample)
+- `src/AutobotsPlaywrightFramework/HelperClasses/JsonReader.cs`
+- `src/AutobotsPlaywrightFramework/HelperClasses/GetTestDataPath.cs`
+
 ## BrowserStack Integration (Playwright)
 - Use BrowserStack Playwright CDP endpoint (`ConnectionString`) with encoded capabilities.
 - Pass session name as current NUnit test name.
