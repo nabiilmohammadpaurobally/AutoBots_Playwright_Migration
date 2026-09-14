@@ -96,6 +96,17 @@ public static class PlaywrightExtensions
     }
 
     /// <summary>
+    /// Registers dialog handling before running the action that triggers the alert, then accepts it.
+    /// </summary>
+    public static async Task WaitForAlertAndAccept(this IPage page, Func<Task> triggerAction, int timeoutInSeconds = 10)
+    {
+        var dialogTask = WaitForDialogAsync(page, timeoutInSeconds);
+        await triggerAction().ConfigureAwait(false);
+        var dialog = await dialogTask.ConfigureAwait(false);
+        await dialog.AcceptAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Scrolls to the element and clicks.
     /// </summary>
     public static async Task ScrollToElementWaitAndClick(this IPage page, string locator)
@@ -120,8 +131,9 @@ public static class PlaywrightExtensions
     public static async Task ScrollToElementWaitAndJavaScriptClick(this IPage page, string locator, List<string> alertMessage)
     {
         await page.ScrollToElementWait(locator).ConfigureAwait(false);
+        var dialogTask = WaitForDialogAsync(page, 10);
         await page.JavaScriptClick(locator).ConfigureAwait(false);
-        await page.WaitForAlertContainsAndAccept(alertMessage).ConfigureAwait(false);
+        await ConsumeAlertContainsAndAccept(dialogTask, alertMessage).ConfigureAwait(false);
         await page.SmartWaitPageLoader().ConfigureAwait(false);
     }
 
@@ -131,8 +143,9 @@ public static class PlaywrightExtensions
     public static async Task ScrollToElementAndJavaScriptClickAlert(this IPage page, string locator, List<string> alertMessage)
     {
         await page.ScrollToElementWait(locator).ConfigureAwait(false);
+        var dialogTask = WaitForDialogAsync(page, 10);
         await page.ClickHandleAlert(locator).ConfigureAwait(false);
-        await page.WaitForAlertContainsAndAccept(alertMessage).ConfigureAwait(false);
+        await ConsumeAlertContainsAndAccept(dialogTask, alertMessage).ConfigureAwait(false);
         await page.SmartWaitPageLoader().ConfigureAwait(false);
     }
 
@@ -146,7 +159,7 @@ public static class PlaywrightExtensions
     }
 
     /// <summary>
-    /// Determines whether a locator exists and is visible.
+    /// Determines whether a locator exists in the DOM.
     /// </summary>
     public static async Task<bool> IsElementPresent(this IPage page, string locator)
     {
@@ -213,9 +226,9 @@ public static class PlaywrightExtensions
         await dialog.AcceptAsync().ConfigureAwait(false);
     }
 
-    private static async Task WaitForAlertContainsAndAccept(this IPage page, IReadOnlyCollection<string> expectedMessages, int timeoutInSeconds = 10)
+    private static async Task ConsumeAlertContainsAndAccept(Task<IDialog> dialogTask, IReadOnlyCollection<string> expectedMessages)
     {
-        var dialog = await WaitForDialogAsync(page, timeoutInSeconds).ConfigureAwait(false);
+        var dialog = await dialogTask.ConfigureAwait(false);
         Assert.That(expectedMessages.Any(m => dialog.Message.Contains(m, StringComparison.OrdinalIgnoreCase)),
             $"Expected dialog message to contain one of [{string.Join(", ", expectedMessages)}], but was '{dialog.Message}'.");
         await dialog.AcceptAsync().ConfigureAwait(false);

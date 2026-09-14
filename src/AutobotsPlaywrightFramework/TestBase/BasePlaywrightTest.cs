@@ -107,6 +107,14 @@ public abstract class BasePlaywrightTest
             Session.Value = null;
         }
 
-        _extentReports?.Flush();
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        lock (ExtentLock)
+        {
+            _extentReports?.Flush();
+        }
     }
 }
