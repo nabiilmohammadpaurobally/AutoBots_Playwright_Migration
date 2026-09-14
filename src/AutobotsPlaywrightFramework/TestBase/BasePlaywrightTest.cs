@@ -14,8 +14,8 @@ namespace AutobotsPlaywrightFramework.TestBase;
 [Parallelizable(ParallelScope.Fixtures)]
 public abstract class BasePlaywrightTest
 {
-    private static readonly ThreadLocal<PlaywrightSession?> Session = new();
-    private static readonly ThreadLocal<ExtentTest?> ExtentNode = new();
+    private static readonly AsyncLocal<PlaywrightSession?> Session = new();
+    private static readonly AsyncLocal<ExtentTest?> ExtentNode = new();
 
     private static ExtentReports? _extentReports;
     private static readonly object ExtentLock = new();

@@ -33,4 +33,18 @@ public class PlaywrightExtensionsTests
         await PlaywrightExtensions.WaitUntilAsync(() => Task.FromResult(true), timeoutSeconds: 0, pollingIntervalSeconds: 1);
         Assert.Pass();
     }
+
+    [Test]
+    public void WaitUntilAsync_ThrowsForNegativeTimeout()
+    {
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+            await PlaywrightExtensions.WaitUntilAsync(() => Task.FromResult(true), timeoutSeconds: -1, pollingIntervalSeconds: 1));
+    }
+
+    [Test]
+    public void WaitUntilAsync_ThrowsForInvalidPollingInterval()
+    {
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
+            await PlaywrightExtensions.WaitUntilAsync(() => Task.FromResult(false), timeoutSeconds: 1, pollingIntervalSeconds: 0));
+    }
 }

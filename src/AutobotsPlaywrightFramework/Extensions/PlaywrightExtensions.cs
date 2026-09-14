@@ -128,7 +128,7 @@ public static class PlaywrightExtensions
     /// <summary>
     /// Scrolls to the element, JavaScript-clicks and validates dialog text.
     /// </summary>
-    public static async Task ScrollToElementWaitAndJavaScriptClick(this IPage page, string locator, List<string> alertMessage)
+    public static async Task ScrollToElementWaitAndJavaScriptClick(this IPage page, string locator, IReadOnlyCollection<string> alertMessage)
     {
         await page.ScrollToElementWait(locator).ConfigureAwait(false);
         var dialogTask = WaitForDialogAsync(page, 10);
@@ -140,7 +140,7 @@ public static class PlaywrightExtensions
     /// <summary>
     /// Scrolls to the element, clicks, validates dialog text and accepts.
     /// </summary>
-    public static async Task ScrollToElementAndJavaScriptClickAlert(this IPage page, string locator, List<string> alertMessage)
+    public static async Task ScrollToElementAndJavaScriptClickAlert(this IPage page, string locator, IReadOnlyCollection<string> alertMessage)
     {
         await page.ScrollToElementWait(locator).ConfigureAwait(false);
         var dialogTask = WaitForDialogAsync(page, 10);
@@ -268,6 +268,16 @@ public static class PlaywrightExtensions
 
     internal static async Task WaitUntilAsync(Func<Task<bool>> predicate, int timeoutSeconds, int pollingIntervalSeconds)
     {
+        if (timeoutSeconds < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeoutSeconds), "Timeout must be non-negative.");
+        }
+
+        if (pollingIntervalSeconds <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pollingIntervalSeconds), "Polling interval must be greater than zero.");
+        }
+
         var deadline = DateTime.UtcNow.AddSeconds(timeoutSeconds);
         while (true)
         {
