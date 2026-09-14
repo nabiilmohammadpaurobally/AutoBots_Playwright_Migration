@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <MaxCpuCount>4</MaxCpuCount>
+    <TargetFrameworkVersion>net8.0</TargetFrameworkVersion>
+  </RunConfiguration>
+
+  <TestRunParameters>
+    <Parameter name="BrowserOption" value="chrome" />
+    <Parameter name="PageUrl" value="https://your-app-url" />
+    <Parameter name="ConnectionString" value="wss://cdp.browserstack.com/playwright" />
+    <Parameter name="BrowserStackUserName" value="" />
+    <Parameter name="BrowserStackAccessKey" value="" />
+    <Parameter name="DefaultTimeoutMs" value="60000" />
+    <Parameter name="PollingIntervalMs" value="1000" />
+    <Parameter name="ParallelScope" value="Fixtures" />
+    <Parameter name="LevelOfParallelism" value="4" />
+  </TestRunParameters>
+</RunSettings>
