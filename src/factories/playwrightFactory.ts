@@ -37,7 +37,7 @@ export class PlaywrightFactory {
     const channel = config.browserType === 'edge' ? 'msedge' : 'chrome';
 
     return chromium.launch({
-      headless: false,
+      headless: config.headless,
       channel
     });
   }

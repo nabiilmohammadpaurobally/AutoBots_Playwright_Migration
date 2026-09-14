@@ -1,4 +1,5 @@
 export type BrowserOption = 'chrome' | 'edge' | 'bs_chrome' | 'bs_edge';
+const supportedBrowserOptions: readonly BrowserOption[] = ['chrome', 'edge', 'bs_chrome', 'bs_edge'];
 
 /**
  * Runtime Playwright configuration loaded from environment variables.
@@ -12,6 +13,7 @@ export class PlaywrightConfig {
   public readonly defaultTimeoutMs: number;
   public readonly pollingIntervalMs: number;
   public readonly testDataPath: string;
+  public readonly headless: boolean;
 
   private constructor(values: {
     browserType: BrowserOption;
@@ -22,6 +24,7 @@ export class PlaywrightConfig {
     defaultTimeoutMs: number;
     pollingIntervalMs: number;
     testDataPath: string;
+    headless: boolean;
   }) {
     this.browserType = values.browserType;
     this.pageUrl = values.pageUrl;
@@ -31,11 +34,16 @@ export class PlaywrightConfig {
     this.defaultTimeoutMs = values.defaultTimeoutMs;
     this.pollingIntervalMs = values.pollingIntervalMs;
     this.testDataPath = values.testDataPath;
+    this.headless = values.headless;
   }
 
   /** Loads config from process environment. */
   public static fromEnv(env: NodeJS.ProcessEnv = process.env): PlaywrightConfig {
-    const browserType = (env.BROWSER_OPTION ?? 'chrome') as BrowserOption;
+    const rawBrowserType = env.BROWSER_OPTION ?? 'chrome';
+    if (!supportedBrowserOptions.includes(rawBrowserType as BrowserOption)) {
+      throw new Error(`Unsupported BROWSER_OPTION '${rawBrowserType}'. Supported values: ${supportedBrowserOptions.join(', ')}.`);
+    }
+    const browserType = rawBrowserType as BrowserOption;
 
     return new PlaywrightConfig({
       browserType,
@@ -45,7 +53,8 @@ export class PlaywrightConfig {
       browserStackAccessKey: env.BROWSERSTACK_ACCESS_KEY ?? '',
       defaultTimeoutMs: PlaywrightConfig.parsePositiveInt(env.DEFAULT_TIMEOUT_MS, 60_000),
       pollingIntervalMs: PlaywrightConfig.parsePositiveInt(env.POLLING_INTERVAL_MS, 1_000),
-      testDataPath: env.TEST_DATA_PATH ?? 'TestData'
+      testDataPath: env.TEST_DATA_PATH ?? 'TestData',
+      headless: (env.HEADLESS ?? 'true').toLowerCase() !== 'false'
     });
   }
 

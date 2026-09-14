@@ -22,9 +22,14 @@ export class PersonalDetailsFormPlaywright {
 
   public async submitAndValidateAlert(expectedMessages: readonly string[]): Promise<void> {
     const message = await waitForAlertAndAccept(this.page, () => this.page.locator(this.continueButton).click());
-    const matched = expectedMessages.some((expected) => message.toLowerCase().includes(expected.toLowerCase()));
+    const matched = matchesExpectedAlert(message, expectedMessages);
     if (!matched) {
       throw new Error(`Alert message '${message}' does not match expected values: ${expectedMessages.join(', ')}`);
     }
   }
+}
+
+/** Returns true when dialog message contains one of the expected values (case-insensitive). */
+export function matchesExpectedAlert(actualMessage: string, expectedMessages: readonly string[]): boolean {
+  return expectedMessages.some((expected) => actualMessage.toLowerCase().includes(expected.toLowerCase()));
 }

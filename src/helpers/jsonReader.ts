@@ -7,7 +7,8 @@ export function fetchData<T>(jsonName: string): T {
   const rootPath = path.resolve(getTestDataPath());
   const filePath = path.resolve(rootPath, `${jsonName}.json`);
   const relativePath = path.relative(rootPath, filePath);
-  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+  const escapesRoot = relativePath === '..' || relativePath.startsWith(`..${path.sep}`);
+  if (escapesRoot || path.isAbsolute(relativePath)) {
     throw new Error(`Invalid JSON path outside test data root: ${jsonName}`);
   }
 
