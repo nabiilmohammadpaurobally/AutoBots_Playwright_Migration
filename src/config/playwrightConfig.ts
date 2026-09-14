@@ -54,7 +54,7 @@ export class PlaywrightConfig {
       defaultTimeoutMs: PlaywrightConfig.parsePositiveInt(env.DEFAULT_TIMEOUT_MS, 60_000),
       pollingIntervalMs: PlaywrightConfig.parsePositiveInt(env.POLLING_INTERVAL_MS, 1_000),
       testDataPath: env.TEST_DATA_PATH ?? 'TestData',
-      headless: (env.HEADLESS ?? 'true').toLowerCase() !== 'false'
+      headless: PlaywrightConfig.parseBoolean(env.HEADLESS, true, 'HEADLESS')
     });
   }
 
@@ -88,5 +88,22 @@ export class PlaywrightConfig {
   private static parsePositiveInt(value: string | undefined, fallback: number): number {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  }
+
+  private static parseBoolean(value: string | undefined, fallback: boolean, keyName: string): boolean {
+    if (value === undefined) {
+      return fallback;
+    }
+
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true') {
+      return true;
+    }
+
+    if (normalized === 'false') {
+      return false;
+    }
+
+    throw new Error(`${keyName} must be 'true' or 'false'.`);
   }
 }

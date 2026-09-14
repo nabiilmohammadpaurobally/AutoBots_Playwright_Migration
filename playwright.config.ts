@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
-const workers = Number(process.env.PLAYWRIGHT_WORKERS ?? 4);
-const timeout = Number(process.env.DEFAULT_TIMEOUT_MS ?? 60_000);
+const workers = parsePositiveInt(process.env.PLAYWRIGHT_WORKERS, 4);
+const timeout = parsePositiveInt(process.env.DEFAULT_TIMEOUT_MS, 60_000);
 
 export default defineConfig({
   testDir: './tests',
@@ -19,3 +19,8 @@ export default defineConfig({
   },
   reporter: [['html', { outputFolder: 'playwright-report', open: 'never' }], ['list']]
 });
+
+function parsePositiveInt(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}

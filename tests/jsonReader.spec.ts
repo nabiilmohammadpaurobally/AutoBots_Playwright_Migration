@@ -12,4 +12,8 @@ test.describe('jsonReader', () => {
   test('throws for missing json file', () => {
     expect(() => fetchData<EmployeeBookingData>('Neonatal/not-found')).toThrow(/JSON file not found/);
   });
+
+  test('blocks path traversal outside test data root', () => {
+    expect(() => fetchData<EmployeeBookingData>('../package')).toThrow(/Invalid JSON path outside test data root/);
+  });
 });
