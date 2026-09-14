@@ -38,7 +38,7 @@ public sealed class PersonalDetailsFormPlaywright
     }
 
     /// <summary>
-    /// Submits the form and accepts the confirmation alert.
+    /// Submits the form without alert handling.
     /// </summary>
     public Task SubmitAsync()
     {

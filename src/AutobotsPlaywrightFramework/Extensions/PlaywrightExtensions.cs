@@ -81,7 +81,7 @@ public static class PlaywrightExtensions
     /// <summary>
     /// Clicks a locator directly with Playwright.
     /// </summary>
-    public static Task ClickHandleAlert(this IPage page, string locator)
+    public static Task ClickLocator(this IPage page, string locator)
     {
         return page.Locator(locator).ClickAsync();
     }
@@ -144,7 +144,7 @@ public static class PlaywrightExtensions
     {
         await page.ScrollToElementWait(locator).ConfigureAwait(false);
         var dialogTask = WaitForDialogAsync(page, 10);
-        await page.ClickHandleAlert(locator).ConfigureAwait(false);
+        await page.JavaScriptClick(locator).ConfigureAwait(false);
         await ConsumeAlertContainsAndAccept(dialogTask, alertMessage).ConfigureAwait(false);
         await page.SmartWaitPageLoader().ConfigureAwait(false);
     }
