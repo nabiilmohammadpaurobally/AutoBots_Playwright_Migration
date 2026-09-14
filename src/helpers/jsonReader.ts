@@ -1,0 +1,25 @@
+import fs from 'fs';
+import path from 'path';
+import { getTestDataPath } from './getTestDataPath';
+
+/** Reads typed JSON data from TestData while preserving existing flow semantics. */
+export function fetchData<T>(jsonName: string): T {
+  if (path.isAbsolute(jsonName) || /^[a-zA-Z]:/.test(jsonName)) {
+    throw new Error(`Invalid JSON path outside test data root: ${jsonName}`);
+  }
+
+  const rootPath = path.resolve(getTestDataPath());
+  const filePath = path.resolve(rootPath, `${jsonName}.json`);
+  const relativePath = path.relative(rootPath, filePath);
+  const escapesRoot = relativePath === '..' || relativePath.startsWith(`..${path.sep}`);
+  if (escapesRoot || path.isAbsolute(relativePath)) {
+    throw new Error(`Invalid JSON path outside test data root: ${jsonName}`);
+  }
+
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`JSON file not found: ${filePath}`);
+  }
+
+  const content = fs.readFileSync(filePath, 'utf-8');
+  return JSON.parse(content) as T;
+}

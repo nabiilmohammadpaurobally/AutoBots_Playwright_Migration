@@ -1,0 +1,11 @@
+{
+  "employee": {
+    "firstName": "John",
+    "surname": "Smith",
+    "email": "john.smith@example.com"
+  },
+  "expectedAlerts": [
+    "Booking created",
+    "Success"
+  ]
+}
