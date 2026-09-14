@@ -222,6 +222,7 @@ public async Task TearDownAsync()
   <PackageReference Include="Microsoft.Playwright" Version="1.54.0" />
   <PackageReference Include="NUnit" Version="4.3.2" />
   <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
   <PackageReference Include="ExtentReports" Version="5.0.4" />
   <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 </ItemGroup>

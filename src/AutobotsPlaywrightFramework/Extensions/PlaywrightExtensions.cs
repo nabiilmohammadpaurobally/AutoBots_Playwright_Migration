@@ -55,7 +55,7 @@ public static class PlaywrightExtensions
     {
         return page.WaitForSelectorAsync(locator, new PageWaitForSelectorOptions
         {
-            State = WaitForSelectorState.Detached,
+            State = WaitForSelectorState.Hidden,
             Timeout = secondsTimeout * 1000
         });
     }
@@ -81,7 +81,7 @@ public static class PlaywrightExtensions
     /// <summary>
     /// Clicks a locator directly with Playwright.
     /// </summary>
-    public static Task JavaScriptClickHandleAlert(this IPage page, string locator)
+    public static Task ClickHandleAlert(this IPage page, string locator)
     {
         return page.Locator(locator).ClickAsync();
     }
@@ -131,7 +131,7 @@ public static class PlaywrightExtensions
     public static async Task ScrollToElementAndJavaScriptClickAlert(this IPage page, string locator, List<string> alertMessage)
     {
         await page.ScrollToElementWait(locator).ConfigureAwait(false);
-        await page.JavaScriptClickHandleAlert(locator).ConfigureAwait(false);
+        await page.ClickHandleAlert(locator).ConfigureAwait(false);
         await page.WaitForAlertContainsAndAccept(alertMessage).ConfigureAwait(false);
         await page.SmartWaitPageLoader().ConfigureAwait(false);
     }
@@ -151,7 +151,7 @@ public static class PlaywrightExtensions
     public static async Task<bool> IsElementPresent(this IPage page, string locator)
     {
         await page.SmartWaitPageLoader().ConfigureAwait(false);
-        return await page.Locator(locator).First.IsVisibleAsync().ConfigureAwait(false);
+        return await page.Locator(locator).CountAsync().ConfigureAwait(false) > 0;
     }
 
     /// <summary>
