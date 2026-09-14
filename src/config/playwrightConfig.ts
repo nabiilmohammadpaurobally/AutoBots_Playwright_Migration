@@ -47,7 +47,7 @@ export class PlaywrightConfig {
 
     return new PlaywrightConfig({
       browserType,
-      pageUrl: env.PAGE_URL ?? 'https://example.com',
+      pageUrl: env.PAGE_URL ?? '',
       connectionString: env.BROWSERSTACK_CDP_URL ?? 'wss://cdp.browserstack.com/playwright',
       browserStackUserName: env.BROWSERSTACK_USERNAME ?? '',
       browserStackAccessKey: env.BROWSERSTACK_ACCESS_KEY ?? '',

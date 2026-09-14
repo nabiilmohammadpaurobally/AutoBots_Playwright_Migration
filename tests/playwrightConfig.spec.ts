@@ -11,6 +11,12 @@ test.describe('PlaywrightConfig', () => {
     expect(config.headless).toBe(false);
   });
 
+  test('throws for invalid headless value', () => {
+    expect(() => PlaywrightConfig.fromEnv({ BROWSER_OPTION: 'chrome', PAGE_URL: 'https://example.com', HEADLESS: 'maybe' } as NodeJS.ProcessEnv)).toThrow(
+      /HEADLESS must be 'true' or 'false'/
+    );
+  });
+
   test('falls back for non-integer numeric values', () => {
     const config = PlaywrightConfig.fromEnv({
       BROWSER_OPTION: 'chrome',

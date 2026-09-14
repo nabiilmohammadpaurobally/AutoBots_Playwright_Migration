@@ -55,7 +55,8 @@ export class PlaywrightFactory {
       'browserstack.accessKey': config.browserStackAccessKey
     };
 
-    const endpoint = `${config.connectionString}?caps=${encodeURIComponent(JSON.stringify(caps))}`;
+    const separator = config.connectionString.includes('?') ? '&' : '?';
+    const endpoint = `${config.connectionString}${separator}caps=${encodeURIComponent(JSON.stringify(caps))}`;
     return chromium.connect(endpoint);
   }
 }

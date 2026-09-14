@@ -4,6 +4,10 @@ import { getTestDataPath } from './getTestDataPath';
 
 /** Reads typed JSON data from TestData while preserving existing flow semantics. */
 export function fetchData<T>(jsonName: string): T {
+  if (path.isAbsolute(jsonName) || /^[a-zA-Z]:/.test(jsonName)) {
+    throw new Error(`Invalid JSON path outside test data root: ${jsonName}`);
+  }
+
   const rootPath = path.resolve(getTestDataPath());
   const filePath = path.resolve(rootPath, `${jsonName}.json`);
   const relativePath = path.relative(rootPath, filePath);
